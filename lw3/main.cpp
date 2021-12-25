@@ -1,0 +1,188 @@
+/*Дана шахматная доска, состоящая из NxN клеток, несколько из них занято другими фигурами.
+Провести ходом коня через незанятые клетки путь минимальной длины из начальной клетки в конечную.
+Ограничения : 2 <= N <= 500, время 1 с.
+Ввод из файла input.txt.В первой строке задано число N.
+В следующих N строках содержится по N символов.
+Символом # обозначена занятая клетка, точкой - незанятая клетка, @-исходное и конечное положение коня(таких символов два).Вывод в файл output.txt.
+Если путь построить невозможно, вывести No, в противном случае вывести такую же карту, как и на входе, 
+но пометить символом @ все промежуточные положения коня(11) 
+Майшанов И.Н. VS Code*/
+
+#include <iostream>
+#include <queue>
+#include <conio.h>
+using namespace std;
+
+static const char BUSY_CELL_SYMBOL = '#';
+static const char FREE_CELL_SYMBOL = '.';
+static const char STARTING_POSITION_SYMBOL = '@';
+static const char END_POSITION_SYMBOL = 'X';
+static const size_t FIELD_SIZE = 9;
+char PLAYING_FIELD[] = "...X....."
+                       "........."
+                       "........."
+                       "........."
+                       ".###....."
+                       "........."
+                       "..#.#...."
+                       "..@......"
+                       "...#.....";
+
+void printMatrix(int **matrix)
+{
+    for (int i = 0; i <= sizeof(matrix); i++)
+    {
+        for (int j = 0; j <= sizeof(matrix); j++)
+        {
+            printf("%3d", matrix[j][i]);
+        }
+        cout << endl;
+    }
+    cout << endl;
+}
+
+int getOffset(int x, int y)
+{
+    return x + y * FIELD_SIZE;
+}
+
+void findPath(int fieldSize, int x, int y, int **visited, int **path, queue<int> &plan)
+{
+    int numberOfDirections = 4;
+    int directionsX[numberOfDirections] = {1, 0, -1, 0};
+    int directionsY[numberOfDirections] = {0, 1, 0, -1};
+    int offset = 0;
+    int ix, iy;
+    if (!visited[x][y])
+    {
+        /* проверяем не вышли ли мы за границы игрового поля, есть ли клетка 
+        в массиве посещенных и можно ли через нее пройти*/
+        for (int i = 0; i < numberOfDirections; i++)
+        {
+            ix = x + directionsX[i];
+            iy = y + directionsY[i];
+            offset = getOffset(ix, iy);
+            if (ix < fieldSize && ix >= 0 && !visited[ix][iy] &&
+                (PLAYING_FIELD[offset] == FREE_CELL_SYMBOL || PLAYING_FIELD[offset] == END_POSITION_SYMBOL))
+            {
+                path[ix][iy] = path[x][y] + 1;
+                plan.push(ix);
+                plan.push(iy);
+            }
+        }
+        visited[x][y] = 1; /* отмечаем клетку, в которой побывали */
+    }
+}
+
+void restorePath(int x_start, int y_start, int x_end, int y_end, char *PLAYING_FIELD, int **path); /* восстановление пути*/
+
+int main()
+{
+    int x_start, y_start, x_end, y_end, x, y;
+    queue<int> cellVisitQueue;
+    int **visited = new int *[FIELD_SIZE];
+    int **path = new int *[FIELD_SIZE];
+
+    for (int y = 0; y < FIELD_SIZE; y++)
+    {
+        visited[y] = new int[FIELD_SIZE]; /* массив для хранения информации о посещении клеток*/
+        path[y] = new int[FIELD_SIZE];    /* массив для хранения найденных путей */
+        for (int x = 0; x < FIELD_SIZE; x++)
+        {
+            visited[y][x] = 0;
+            path[y][x] = -1;
+            int offset = getOffset(x, y);
+            if (PLAYING_FIELD[offset] == STARTING_POSITION_SYMBOL)
+            { /* находим начало пути*/
+                x_start = x;
+                y_start = y;
+                cellVisitQueue.push(x); /* заносим начальную клетку */
+                cellVisitQueue.push(y); /* в план посещения */
+                path[x][y] = 1;
+            }
+            else if (PLAYING_FIELD[offset] == END_POSITION_SYMBOL)
+            { /* находим конечную точку */
+                x_end = x;
+                y_end = y;
+            }
+        }
+    }
+    cout << "Path" << endl;
+    printMatrix(path);
+    cout << "Visited" << endl;
+    printMatrix(visited);
+    int i = 1;
+    while (!cellVisitQueue.empty())
+    { /* пока очередь посещения клеток непустая*/
+        x = cellVisitQueue.front();
+        cellVisitQueue.pop();
+        y = cellVisitQueue.front();
+        cellVisitQueue.pop();
+        findPath(FIELD_SIZE, x, y, visited, path, cellVisitQueue); /* продолжаем поиск пути*/
+        i++;
+    }
+    cout << "Path" << endl;
+    printMatrix(path);
+    cout << "Visited" << endl;
+    printMatrix(visited);
+
+    if (!visited[x_end][y_end])
+    {
+        cout << "No way" << endl;
+    }
+    else
+    {
+        cout << "Y" << endl;
+        cout << "x_start= " << x_start << " y_start= " << y_start << endl;
+        cout << "x_end= " << x_end << " y_end= " << y_end << endl;
+        restorePath(x_start, y_start, x_end, y_end, PLAYING_FIELD, path);
+
+        for (int i = 0; i < FIELD_SIZE; i++)
+        {
+            for (int j = 0; j < FIELD_SIZE; j++)
+            {
+                int offset = getOffset(j, i);
+                cout << PLAYING_FIELD[offset];
+            }
+            cout << endl;
+        }
+    }
+    getch();
+    return 0;
+}
+
+bool checkOutOfBorder(int x, int y)
+{
+    if (x >= 0 && x < FIELD_SIZE && y >= 0 && y < FIELD_SIZE)
+        return true;
+    else
+        return false;
+}
+
+void restorePath(int x_start, int y_start, int x_end, int y_end, char *PLAYING_FIELD, int **path) /* восстановление пути*/
+{
+    int x = x_end;
+    int y = y_end;
+    int offset = getOffset(x, y);
+    char pathMarker = '+';
+    int numberOfDirections = 4;
+    int directionsX[numberOfDirections] = {1, 0, -1, 0};
+    int directionsY[numberOfDirections] = {0, 1, 0, -1};
+    int ix, iy;
+    while (path[x][y] != path[x_start][y_start] + 1)
+    {
+        for (int i = 0; i < numberOfDirections; i++)
+        {
+            ix = x + directionsX[i];
+            iy = y + directionsY[i];
+            if (checkOutOfBorder(x, y) && (path[ix][iy] == path[x][y] - 1) && (path[x][y] != path[x_start][y_start] + 1))
+            {
+                x = ix;
+                y = iy;
+                cout << "x_= " << x << " y_= " << y << " " << path[ix][iy] << endl;
+                offset = getOffset(x, y);
+                PLAYING_FIELD[offset] = pathMarker;
+            }
+        }
+    }
+}
