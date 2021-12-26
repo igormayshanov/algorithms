@@ -28,7 +28,7 @@ const int directionsY[numberOfDirections] = {-2, -2, 1, -1, 2, 2, 1, -1};
 
 void findPath(int fieldSize, int x, int y, vector<vector<char>> playingField, int **visited, int **path, queue<int> &plan);
 
-void restorePath(int fieldSize, int x_start, int y_start, int x_end, int y_end, vector<vector<char>> &playingField, int **path); /* восстановление пути*/
+void restorePath(int fieldSize, int x_start, int y_start, int x_end, int y_end, vector<vector<char>> &playingField, int **path);
 
 void printVector2(int fieldSize, vector<vector<char>> playingField);
 
@@ -117,7 +117,7 @@ bool checkOutOfBorder(int x, int y, int fieldSize)
         return false;
 }
 
-void restorePath(int fieldSize, int x_start, int y_start, int x_end, int y_end, vector<vector<char>> &playingField, int **path) /* восстановление пути*/
+void restorePath(int fieldSize, int x_start, int y_start, int x_end, int y_end, vector<vector<char>> &playingField, int **path)
 {
     int x = x_end;
     int y = y_end;
