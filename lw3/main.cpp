@@ -26,19 +26,6 @@ const int numberOfDirections = 8;
 const int directionsX[numberOfDirections] = {1, -1, 2, 2, 1, -1, -2, -2};
 const int directionsY[numberOfDirections] = {-2, -2, 1, -1, 2, 2, 1, -1};
 
-void printMatrix(int **matrix, int fieldSize)
-{
-    for (int i = 0; i < fieldSize; i++)
-    {
-        for (int j = 0; j < fieldSize; j++)
-        {
-            printf("%3d", matrix[j][i]);
-        }
-        cout << endl;
-    }
-    cout << endl;
-}
-
 void findPath(int fieldSize, int x, int y, vector<vector<char>> playingField, int **visited, int **path, queue<int> &plan);
 
 void restorePath(int fieldSize, int x_start, int y_start, int x_end, int y_end, vector<vector<char>> &playingField, int **path); /* восстановление пути*/
@@ -78,14 +65,6 @@ int main()
             }
         }
     }
-    cout << "printVector2" << endl;
-    printVector2(fieldSize, playingField);
-    cout << "Path" << endl;
-    printMatrix(path, fieldSize);
-    cout << "Visited" << endl;
-    printMatrix(visited, fieldSize);
-    cout << "x_start: " << x_start << "y_start: " << y_start << endl;
-    cout << "x_end: " << x_end << "y_end: " << y_end << endl;
     while (!cellVisitQueue.empty())
     {
         x = cellVisitQueue.front();
@@ -102,10 +81,6 @@ int main()
     {
         cout << "Yes" << endl;
         restorePath(fieldSize, x_start, y_start, x_end, y_end, playingField, path);
-        cout << "Path" << endl;
-        printMatrix(path, fieldSize);
-        cout << "Visited" << endl;
-        printMatrix(visited, fieldSize);
         printVector2(fieldSize, playingField);
     }
     return 0;
@@ -158,7 +133,6 @@ void restorePath(int fieldSize, int x_start, int y_start, int x_end, int y_end, 
             {
                 x = ix;
                 y = iy;
-                cout << "x_= " << x << " y_= " << y << " " << path[x][y] << endl;
                 playingField[y][x] = pathMarker;
             }
         }
