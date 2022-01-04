@@ -57,7 +57,7 @@ int main()
                 y_start = y;
                 cellVisitQueue.push(x); /* заносим начальную клетку */
                 cellVisitQueue.push(y); /* в план посещения */
-                path[x][y] = 1;
+                path[y][x] = 1;
             }
             else if (playingField[y][x] == END_POSITION_SYMBOL)
             { /* находим конечную точку */
@@ -87,29 +87,6 @@ int main()
     return 0;
 }
 
-void findPath(int fieldSize, int x, int y, vector<vector<char>> playingField, int **visited, int **path, queue<int> &plan)
-{
-    int offset = 0;
-    int ix, iy;
-    if (!visited[x][y]) /* проверяем не вышли ли мы за границы игрового поля, есть ли клетка 
-    в массиве посещенных и можно ли через нее пройти*/
-    {
-        for (int i = 0; i < numberOfDirections; i++)
-        {
-            ix = x + directionsX[i];
-            iy = y + directionsY[i];
-            if (ix < fieldSize && ix >= 0 && !visited[ix][iy] &&
-                (playingField[ix][iy] == FREE_CELL_SYMBOL || playingField[ix][iy] == END_POSITION_SYMBOL))
-            {
-                path[ix][iy] = path[x][y] + 1;
-                plan.push(ix);
-                plan.push(iy);
-            }
-        }
-        visited[x][y] = 1; /* отмечаем клетку, в которой побывали */
-    }
-}
-
 bool checkOutOfBorder(int x, int y, int fieldSize)
 {
     if (x >= 0 && x < fieldSize && y >= 0 && y < fieldSize)
@@ -118,19 +95,42 @@ bool checkOutOfBorder(int x, int y, int fieldSize)
         return false;
 }
 
+void findPath(int fieldSize, int x, int y, vector<vector<char>> playingField, int **visited, int **path, queue<int> &plan)
+{
+    int offset = 0;
+    int ix, iy;
+    if (!visited[y][x]) /* проверяем не вышли ли мы за границы игрового поля, есть ли клетка 
+    в массиве посещенных и можно ли через нее пройти*/
+    {
+        for (int i = 0; i < numberOfDirections; i++)
+        {
+            ix = x + directionsX[i];
+            iy = y + directionsY[i];
+            if (checkOutOfBorder(ix, iy, fieldSize) && !visited[iy][ix] &&
+                (playingField[iy][ix] == FREE_CELL_SYMBOL || playingField[iy][ix] == END_POSITION_SYMBOL))
+            {
+                path[iy][ix] = path[y][x] + 1;
+                plan.push(ix);
+                plan.push(iy);
+            }
+        }
+        visited[y][x] = 1; /* отмечаем клетку, в которой побывали */
+    }
+}
+
 void restorePath(int fieldSize, int x_start, int y_start, int x_end, int y_end, vector<vector<char>> &playingField, int **path)
 {
     int x = x_end;
     int y = y_end;
     char pathMarker = '@';
     int ix, iy;
-    while (path[x][y] != path[x_start][y_start] + 1)
+    while (path[y][x] != path[y_start][x_start] + 1)
     {
         for (int i = 0; i < numberOfDirections; i++)
         {
             ix = x + directionsX[i];
             iy = y + directionsY[i];
-            if (checkOutOfBorder(ix, iy, fieldSize) && (path[x][y] != path[x_start][y_start] + 1) && (path[ix][iy] == path[x][y] - 1))
+            if (checkOutOfBorder(ix, iy, fieldSize) && (path[y][x] != path[y_start][x_start] + 1) && (path[iy][ix] == path[y][x] - 1))
             {
                 x = ix;
                 y = iy;
