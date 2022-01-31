@@ -49,8 +49,8 @@ int main()
   while (exit)
   {
     std::cout << "Choose an action" << std::endl;
-    std::cout << "1. Read rating from file" << std::endl;
-    std::cout << "2. Print rating" << std::endl;
+    std::cout << "1. Read ranking from file" << std::endl;
+    std::cout << "2. Print ranking" << std::endl;
     std::cout << "3. Seeding players" << std::endl;
     std::cout << "4. Print tournament tree" << std::endl;
     std::cout << "5. Return the result of the tour" << std::endl;
@@ -236,7 +236,6 @@ int getMenuItemNumber(int count)
     printf("Incorrect input. Try again: ");
     scanf("%s", s);
   }
-
   return itemNumber;
 }
 
