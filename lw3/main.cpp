@@ -183,7 +183,11 @@ void findPath(int startPin,
     cout << "Found the path: "
          << "\n";
     for (i = 0; i < j; i++)
-      cout << currPath[i] << " ";
+    {
+      cout << "adjMat " << currPath[i] << ", " << currPath[i+1] << " = "<< adjMat[currPath[i]][currPath[i+1]] << " \n";
+      pathLength += adjMat[currPath[i]][currPath[i+1]];
+      cout << currPath[i] << "\n";
+    }
     cout << "\n"
          << pathLength << "\n";
     pathLength = 0;
@@ -193,8 +197,6 @@ void findPath(int startPin,
     for (i = 0; i < numOfPins; i++)
       if (!visited[i] && (adjMat[startPin][i] > 0))
       {
-        pathLength += adjMat[startPin][i];
-        cout << pathLength << " ";
         findPath(i, endPin, numOfPins, j, pathLength, currPath, visited, adjMat);
       }
   }
