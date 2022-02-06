@@ -1,153 +1,213 @@
-/*Дана шахматная доска, состоящая из NxN клеток, несколько из них занято другими фигурами.
-Провести ходом коня через незанятые клетки путь минимальной длины из начальной клетки в конечную.
-Ограничения : 2 <= N <= 500, время 1 с.
-Ввод из файла input.txt.В первой строке задано число N.
-В следующих N строках содержится по N символов.
-Символом # обозначена занятая клетка, точкой - незанятая клетка, @-исходное и конечное положение коня(таких символов два).Вывод в файл output.txt.
-Если путь построить невозможно, вывести No, в противном случае вывести такую же карту, как и на входе, 
-но пометить символом @ все промежуточные положения коня(11) 
-Майшанов И.Н. VS Code*/
-
 #include <iostream>
 #include <fstream>
+#include <cstring>
 #include <vector>
-#include <string>
-#include <sstream>
-#include <queue>
-#include <conio.h>
+#include <cmath>
+#include <algorithm>
+#include <locale.h>
 
 using namespace std;
 
-static const char BUSY_CELL_SYMBOL = '#';
-static const char FREE_CELL_SYMBOL = '.';
-static const char STARTING_POSITION_SYMBOL = '@';
-static const char END_POSITION_SYMBOL = 'X';
-const int numberOfDirections = 8;
-const int directionsX[numberOfDirections] = {1, -1, 2, 2, 1, -1, -2, -2};
-const int directionsY[numberOfDirections] = {-2, -2, 1, -1, 2, 2, 1, -1};
+struct PCBpin
+{
+  int pinNum;
+  int x;
+  int y;
+};
 
-void findPath(int fieldSize, int x, int y, vector<vector<char>> playingField, int **visited, int **path, queue<int> &plan);
-
-void restorePath(int fieldSize, int x_start, int y_start, int x_end, int y_end, vector<vector<char>> &playingField, int **path);
-
-void printVector2(int fieldSize, vector<vector<char>> playingField);
+int getMenuItemNumber(int count);
+void readFileInVector(vector<PCBpin> &PCBpins);
+void printVector(vector<PCBpin> &Vector);
+vector<vector<int>> resize2dVector(int n);
+void printMatrix(vector<vector<int>> adjMat);
+void getAdjacencyMatrix(vector<PCBpin> &PCBpins, vector<vector<int>> &adjMat);
+void findPath(int startPin,
+              int endPin,
+              int numOfPins,
+              int j,
+              int &pathLength,
+              vector<int> &currPath,
+              vector<bool> &visited,
+              vector<vector<int>> &adjMat);
 
 int main()
 {
-    int fieldSize;
-    scanf("%d", &fieldSize);
-    cout << fieldSize << endl;
-    vector<vector<char>> playingField(fieldSize, vector<char>(fieldSize));
-    int x_start, y_start, x_end, y_end, x, y;
-    queue<int> cellVisitQueue;
-    int **visited = new int *[fieldSize];
-    int **path = new int *[fieldSize];
-    for (int y = 0; y < fieldSize; y++)
+  setlocale(LC_ALL, "Russian");
+  system("cls");
+  vector<bool> visited;
+  vector<int> currentPath;
+  vector<PCBpin> PCBpins;
+  int numberOfPCBpins = 0;
+  vector<vector<int>> adjMat;
+  int startPoint;
+  int endPoint;
+  int counter;
+  int pathLength;
+  int choice;
+  bool exit = true;
+  while (exit)
+  {
+    std::cout << "Choose an action" << std::endl;
+    std::cout << "1. Read the file with PCB pin coordinates" << std::endl;
+    std::cout << "2. Read file with PCB pin connections" << std::endl;
+    std::cout << "3. Find path" << std::endl;
+    std::cout << "4. Exit" << std::endl;
+    choice = getMenuItemNumber(6);
+    switch (choice)
     {
-        visited[y] = new int[fieldSize]; /* массив для хранения информации о посещении клеток*/
-        path[y] = new int[fieldSize];    /* массив для хранения найденных путей */
-        for (int x = 0; x < fieldSize; x++)
-        {
-            visited[y][x] = 0;
-            path[y][x] = -1;
-            scanf(" %c", &playingField[y][x]);
-            if (playingField[y][x] == STARTING_POSITION_SYMBOL)
-            { /* находим начало пути*/
-                x_start = x;
-                y_start = y;
-                cellVisitQueue.push(x); /* заносим начальную клетку */
-                cellVisitQueue.push(y); /* в план посещения */
-                path[y][x] = 1;
-            }
-            else if (playingField[y][x] == END_POSITION_SYMBOL)
-            { /* находим конечную точку */
-                x_end = x;
-                y_end = y;
-            }
-        }
+    case 1:
+      PCBpins.clear();
+      readFileInVector(PCBpins);
+      numberOfPCBpins = PCBpins.size();
+      cout << numberOfPCBpins << "\n";
+      printVector(PCBpins);
+      break;
+    case 2:
+      cout << numberOfPCBpins << "\n";
+      adjMat = resize2dVector(numberOfPCBpins);
+      getAdjacencyMatrix(PCBpins, adjMat);
+      printMatrix(adjMat);
+      break;
+    case 3:
+      visited.resize(numberOfPCBpins);
+      currentPath.resize(numberOfPCBpins);
+      startPoint = 0;
+      endPoint = 4;
+      counter = 0;
+      pathLength = 0;
+      findPath(startPoint, endPoint, numberOfPCBpins, counter, pathLength, currentPath, visited, adjMat);
+      break;
+    case 4:
+      exit = false;
+      break;
     }
-    while (!cellVisitQueue.empty())
-    {
-        x = cellVisitQueue.front();
-        cellVisitQueue.pop();
-        y = cellVisitQueue.front();
-        cellVisitQueue.pop();
-        findPath(fieldSize, x, y, playingField, visited, path, cellVisitQueue); /* продолжаем поиск пути*/
-    }
-    if (!visited[x_end][y_end])
-    {
-        cout << "No" << endl;
-    }
-    else
-    {
-        cout << "Yes" << endl;
-        restorePath(fieldSize, x_start, y_start, x_end, y_end, playingField, path);
-        printVector2(fieldSize, playingField);
-    }
-    return 0;
+  }
+  return 0;
 }
 
-bool checkOutOfBorder(int x, int y, int fieldSize)
+int getMenuItemNumber(int count)
 {
-    if (x >= 0 && x < fieldSize && y >= 0 && y < fieldSize)
-        return true;
-    else
-        return false;
+  int itemNumber;
+  char s[100];
+  scanf("%s", s);
+  while (sscanf(s, "%d", &itemNumber) != 1 || itemNumber < 1 || itemNumber > count)
+  {
+    printf("Incorrect input. Try again: ");
+    scanf("%s", s);
+  }
+  return itemNumber;
 }
 
-void findPath(int fieldSize, int x, int y, vector<vector<char>> playingField, int **visited, int **path, queue<int> &plan)
+vector<vector<int>> resize2dVector(int n)
 {
-    int offset = 0;
-    int ix, iy;
-    if (!visited[y][x]) /* проверяем не вышли ли мы за границы игрового поля, есть ли клетка 
-    в массиве посещенных и можно ли через нее пройти*/
-    {
-        for (int i = 0; i < numberOfDirections; i++)
-        {
-            ix = x + directionsX[i];
-            iy = y + directionsY[i];
-            if (checkOutOfBorder(ix, iy, fieldSize) && !visited[iy][ix] &&
-                (playingField[iy][ix] == FREE_CELL_SYMBOL || playingField[iy][ix] == END_POSITION_SYMBOL))
-            {
-                path[iy][ix] = path[y][x] + 1;
-                plan.push(ix);
-                plan.push(iy);
-            }
-        }
-        visited[y][x] = 1; /* отмечаем клетку, в которой побывали */
-    }
+  vector<vector<int>> adjMat(n);
+  for (int i = 0; i < n; i++)
+    adjMat[i].resize(n);
+  return adjMat;
 }
 
-void restorePath(int fieldSize, int x_start, int y_start, int x_end, int y_end, vector<vector<char>> &playingField, int **path)
+void printVector(vector<PCBpin> &Vector)
 {
-    int x = x_end;
-    int y = y_end;
-    char pathMarker = '@';
-    int ix, iy;
-    while (path[y][x] != path[y_start][x_start] + 1)
-    {
-        for (int i = 0; i < numberOfDirections; i++)
-        {
-            ix = x + directionsX[i];
-            iy = y + directionsY[i];
-            if (checkOutOfBorder(ix, iy, fieldSize) && (path[y][x] != path[y_start][x_start] + 1) && (path[iy][ix] == path[y][x] - 1))
-            {
-                x = ix;
-                y = iy;
-                playingField[y][x] = pathMarker;
-            }
-        }
-    }
+  std::cout << "Print vector" << std::endl;
+  for (size_t i = 0; i < Vector.size(); i++)
+    std::cout << Vector[i].pinNum << " " << Vector[i].x << " " << Vector[i].y << "\n";
 }
 
-void printVector2(int fieldSize, vector<vector<char>> playingField)
+void readFileInVector(vector<PCBpin> &Vector)
 {
-    for (int i = 0; i < fieldSize; i++)
+  string pathIn;
+  cout << "Enter file name: ";
+  cin >> pathIn;
+  ifstream fileIn(pathIn);
+  if (!fileIn.is_open())
+  {
+    std::cout << "file open error" << std::endl;
+  }
+  else
+  {
+    PCBpin PCBpin;
+    while (!fileIn.eof())
     {
-        for (int j = 0; j < fieldSize; j++)
-        {
-            printf("%c", playingField[i][j]);
-        }
-        printf("\n");
+      fileIn >> PCBpin.pinNum >> PCBpin.x >> PCBpin.y;
+      Vector.push_back(PCBpin);
     }
+    fileIn.close();
+  }
+}
+
+void getAdjacencyMatrix(vector<PCBpin> &PCBpins, vector<vector<int>> &adjMat)
+{
+  string pathIn;
+  cout << "Enter file name: ";
+  cin >> pathIn;
+  ifstream fileIn(pathIn);
+  if (!fileIn.is_open())
+  {
+    std::cout << "file open error" << std::endl;
+  }
+  else
+  {
+    int startPin;
+    int endPin;
+    int lengthX;
+    int lengthY;
+    int edgeLength;
+    while (!fileIn.eof())
+    {
+      fileIn >> startPin >> endPin;
+      lengthX = PCBpins[startPin].x - PCBpins[endPin].x;
+      lengthY = PCBpins[startPin].y - PCBpins[endPin].y;
+      edgeLength = int(sqrt(pow(lengthX, 2) + pow(lengthY, 2)));
+      adjMat[startPin][endPin] = edgeLength;
+      adjMat[endPin][startPin] = edgeLength;
+    }
+    fileIn.close();
+  }
+}
+
+void findPath(int startPin,
+              int endPin,
+              int numOfPins,
+              int j,
+              int &pathLength,
+              vector<int> &currPath,
+              vector<bool> &visited,
+              vector<vector<int>> &adjMat)
+{
+  int i;
+  currPath[j] = startPin;
+  visited[startPin] = true;
+  j = j + 1;
+  if (startPin == endPin)
+  {
+    cout << "Found the path: "
+         << "\n";
+    for (i = 0; i < j; i++)
+      cout << currPath[i] << " ";
+    cout << "\n"
+         << pathLength << "\n";
+    pathLength = 0;
+  }
+  else
+  {
+    for (i = 0; i < numOfPins; i++)
+      if (!visited[i] && (adjMat[startPin][i] > 0))
+      {
+        pathLength += adjMat[startPin][i];
+        cout << pathLength << " ";
+        findPath(i, endPin, numOfPins, j, pathLength, currPath, visited, adjMat);
+      }
+  }
+  j = j - 1;
+  visited[startPin] = false;
+}
+
+void printMatrix(vector<vector<int>> adjMat)
+{
+  for (int i = 0; i < adjMat.size(); i++)
+  {
+    for (int j = 0; j < adjMat[i].size(); j++)
+      printf("%4d", adjMat[i][j]);
+    cout << "\n";
+  }
 }
