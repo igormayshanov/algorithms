@@ -39,11 +39,11 @@ int main()
   vector<PCBpin> PCBpins;
   int numberOfPCBpins = 0;
   vector<vector<int>> adjMat;
-  int startPoint;
-  int endPoint;
-  int counter;
-  int pathLength;
-  int maxPathLength;
+  int startPoint = 0;
+  int endPoint = 0;
+  int counter = 0;
+  int maxPathLength = 0;
+  int tmpMaxPathLength = 0;
   int choice;
   bool exit = true;
   while (exit)
@@ -51,7 +51,7 @@ int main()
     std::cout << "Choose an action" << std::endl;
     std::cout << "1. Read the file with PCB pin coordinates" << std::endl;
     std::cout << "2. Read file with PCB pin connections" << std::endl;
-    std::cout << "3. Find path" << std::endl;
+    std::cout << "3. Find paths" << std::endl;
     std::cout << "4. Exit" << std::endl;
     choice = getMenuItemNumber(6);
     switch (choice)
@@ -72,12 +72,25 @@ int main()
     case 3:
       visited.resize(numberOfPCBpins);
       currentPath.resize(numberOfPCBpins);
-      startPoint = 0;
-      endPoint = 4;
-      counter = 0;
-      pathLength = 0;
-      maxPathLength = 0;
-      findPath(startPoint, endPoint, numberOfPCBpins, counter, maxPathLength, currentPath, visited, adjMat);
+      for (int i = 0; i < adjMat.size(); i++)
+      {
+        for (int j = adjMat[i].size() - 1; j > i; j--)
+          {
+            findPath(i, j, numberOfPCBpins, counter, tmpMaxPathLength, currentPath, visited, adjMat);
+            if (tmpMaxPathLength > maxPathLength)
+            {
+                maxPathLength = tmpMaxPathLength;
+                startPoint = i;
+                endPoint = j;
+            }
+          }
+      }
+   //   findPath(startPoint, endPoint, numberOfPCBpins, counter, maxPathLength, currentPath, visited, adjMat);
+      cout << "PCB pin from which you can build a path of maximum length = "
+           << startPoint
+           << " to "
+           << endPoint
+           << "\n";
       cout << "Maximum path length = " << maxPathLength << "\n";
       break;
     case 4:
@@ -184,13 +197,17 @@ void findPath(int startPin,
   if (startPin == endPin)
   {
     int counter = 0;
-    cout << "Found the path: "
+    cout << "Found the path: j = "
+         << j
          << "\n";
     for (i = 0; i < j; i++)
     {
-      cout << "adjMat " << currPath[i] << ", " << currPath[i+1] << " = " << adjMat[currPath[i]][currPath[i+1]] << " \n";
-      counter += adjMat[currPath[i]][currPath[i+1]];
-      cout << currPath[i] << "\n";
+        cout << currPath[i] << "\n";
+        if ((i + 1) < j)
+        {
+          cout << "adjMat " << currPath[i] << ", " << currPath[i+1] << " = " << adjMat[currPath[i]][currPath[i+1]] << " \n";
+          counter += adjMat[currPath[i]][currPath[i+1]];
+        }
     }
     cout << "\n"
          << counter << "\n";
