@@ -25,7 +25,7 @@ void findPath(int startPin,
               int endPin,
               int numOfPins,
               int j,
-              int &pathLength,
+              int &maxPathLength,
               vector<int> &currPath,
               vector<bool> &visited,
               vector<vector<int>> &adjMat);
@@ -43,6 +43,7 @@ int main()
   int endPoint;
   int counter;
   int pathLength;
+  int maxPathLength;
   int choice;
   bool exit = true;
   while (exit)
@@ -75,7 +76,9 @@ int main()
       endPoint = 4;
       counter = 0;
       pathLength = 0;
-      findPath(startPoint, endPoint, numberOfPCBpins, counter, pathLength, currentPath, visited, adjMat);
+      maxPathLength = 0;
+      findPath(startPoint, endPoint, numberOfPCBpins, counter, maxPathLength, currentPath, visited, adjMat);
+      cout << "Maximum path length = " << maxPathLength << "\n";
       break;
     case 4:
       exit = false;
@@ -169,7 +172,7 @@ void findPath(int startPin,
               int endPin,
               int numOfPins,
               int j,
-              int &pathLength,
+              int &maxPathLength,
               vector<int> &currPath,
               vector<bool> &visited,
               vector<vector<int>> &adjMat)
@@ -180,24 +183,26 @@ void findPath(int startPin,
   j = j + 1;
   if (startPin == endPin)
   {
+    int counter = 0;
     cout << "Found the path: "
          << "\n";
     for (i = 0; i < j; i++)
     {
-      cout << "adjMat " << currPath[i] << ", " << currPath[i+1] << " = "<< adjMat[currPath[i]][currPath[i+1]] << " \n";
-      pathLength += adjMat[currPath[i]][currPath[i+1]];
+      cout << "adjMat " << currPath[i] << ", " << currPath[i+1] << " = " << adjMat[currPath[i]][currPath[i+1]] << " \n";
+      counter += adjMat[currPath[i]][currPath[i+1]];
       cout << currPath[i] << "\n";
     }
     cout << "\n"
-         << pathLength << "\n";
-    pathLength = 0;
+         << counter << "\n";
+    if (counter > maxPathLength)
+      maxPathLength = counter;
   }
   else
   {
     for (i = 0; i < numOfPins; i++)
       if (!visited[i] && (adjMat[startPin][i] > 0))
       {
-        findPath(i, endPin, numOfPins, j, pathLength, currPath, visited, adjMat);
+        findPath(i, endPin, numOfPins, j, maxPathLength, currPath, visited, adjMat);
       }
   }
   j = j - 1;
