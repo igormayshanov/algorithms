@@ -1,5 +1,10 @@
-/* 
-  13. РўРµРЅРЅРёСЃРЅС‹Р№  С‚СѓСЂРЅРёСЂ  РїСЂРѕС…РѕРґРёС‚  РїРѕ  РѕР»РёРјРїРёР№СЃРєРѕР№  СЃРёСЃС‚РµРјРµ СЃ РІС‹Р±С‹РІР°РЅРёСЏРјРё. Р’ С‚СѓСЂРЅРёСЂРµ СѓС‡Р°СЃС‚РІСѓСЋС‚ 2^n РёРіСЂРѕРєРѕРІ. РР·РІРµСЃС‚РµРЅ СЂРµР№С‚РёРЅРі РєР°Р¶РґРѕРіРѕ РёРіСЂРѕРєР°.  Р РµР·СѓР»СЊС‚Р°С‚С‹ С‚СѓСЂРЅРёСЂР° Р·Р°РїРёСЃР°РЅС‹ СЃ РїРѕРјРѕС‰СЊСЋ РґРµСЂРµРІР°. РџРµСЂРІРѕРЅР°С‡Р°Р»СЊРЅРѕ  Р·Р°РґР°РµС‚СЃСЏ  С‚РѕР»СЊРєРѕ  СЃРїРёСЃРѕРє  СѓС‡Р°СЃС‚РЅРёРєРѕРІ,   РєРѕС‚РѕСЂС‹Рј СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‚  Р»РёСЃС‚СЊСЏ  РґРµСЂРµРІР°.  РР·РІРµСЃС‚РЅРѕ,  С‡С‚Рѕ С‚СѓСЂРЅРёСЂ РїСЂРѕС€РµР» РІ РїРѕР»РЅРѕРј СЃРѕРѕС‚РІРµС‚СЃС‚РІРёРё СЃ СЂРµР№С‚РёРЅРіРѕРј РёРіСЂРѕРєРѕРІ.  РўСЂРµР±СѓРµС‚СЃСЏ РїСЂРµРґР»РѕР¶РёС‚СЊ СЂР°СЃРїСЂРµРґРµР»РµРЅРёРµ  РёР»Рё РїРѕСЃРµРІ СЃРёР»СЊРЅРµР№С€РёС… РёРіСЂРѕРєРѕРІ С‚Р°Рє,  С‡С‚РѕР±С‹ РѕРЅРё РЅРµ РІСЃС‚СЂРµС‡Р°Р»РёСЃСЊ РІ РЅР°С‡Р°Р»Рµ С‚СѓСЂРЅРёСЂР°. РџРѕРєР°Р·Р°С‚СЊ РІ РЅР°РіР»СЏРґРЅРѕРј РІРёРґРµ РґРµСЂРµРІРѕ РїСЂРѕРІРµРґРµРЅРЅРѕРіРѕ С‚СѓСЂРЅРёСЂР° Рё РІС‹РґР°С‚СЊ СЂРµР·СѓР»СЊС‚Р°С‚С‹ РїРѕ С‚СѓСЂР°Рј (12) РњР°Р№С€Р°РЅРѕРІ Р.Рќ. VS Code.
+/*
+  13. Теннисный  турнир  проходит  по  олимпийской  системе с выбываниями. В турнире участвуют 2^n игроков.
+  Известен рейтинг каждого игрока.  Результаты турнира записаны с помощью дерева.
+  Первоначально  задается  только  список  участников,   которым соответствуют  листья  дерева.
+  Известно,  что турнир прошел в полном соответствии с рейтингом игроков.
+  Требуется предложить распределение  или посев сильнейших игроков так,  чтобы они не встречались в начале турнира.
+  Показать в наглядном виде дерево проведенного турнира и выдать результаты по турам (12) Майшанов И.Н. VS Code.
 */
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,7 +16,10 @@
 #include <vector>
 #include <string>
 #include <sstream>
-const int DL = 20;
+#include <windows.h>
+#include <queue>
+
+const int DL = 20; // максимальная длина
 using namespace std;
 
 struct player
@@ -36,93 +44,110 @@ int getMenuItemNumber(int count);
 void printVector(vector<player> &Vector);
 void printTreePostfix(tree *ptr, int level);
 void printTreeInfix(tree *ptr, int level);
-int printTourResult(struct tree *ptr, int tour, vector<player> &Players);
+void printLeafs(tree *ptr, int level);
+void printTreeLevels(tree *ptr, int level);
+void traverseDepthFirst(tree *root, int treeHeight);
+int printTourResult(struct tree *ptr, int tour, vector<player> &Players, bool &outputParent);
 void freeTree(tree *&tree);
 
 int main()
 {
   setlocale(LC_ALL, "RU");
   vector<player> Players;
+  vector<player> seedPlayers;
   tree *root = NULL;
+  int treeHeight=0;
   int choice;
   bool exit = true;
   while (exit)
-  {
-    std::cout << "Choose an action" << std::endl;
-    std::cout << "1. Read ranking from file" << std::endl;
-    std::cout << "2. Print ranking" << std::endl;
-    std::cout << "3. Seeding players" << std::endl;
-    std::cout << "4. Print tournament tree" << std::endl;
-    std::cout << "5. Return the result of the tour" << std::endl;
-    std::cout << "6. Exit" << std::endl;
-    choice = getMenuItemNumber(6);
-    switch (choice)
     {
-    case 1:
-      freeTree(root);
-      Players = readFileInVector();
-      break;
-    case 2:
-      printVector(Players);
-      break;
-    case 3:
-      getTournamentTree(root, Players);
-      break;
-    case 4:
-      printTreeInfix(root, 0);
-      break;
-    case 5:
-      if (!root)
-      {
-        cout << "Tree is empty \n";
-        system("pause");
-      }
-      else
-      {
-        cout << "Enter tour number: ";
-        int tour;
-        int treeHeight = getTreeHeight(Players);
-        cin >> tour;
-        tour = treeHeight - tour + 1;
-        cout << "\n";
-        printTourResult(root, tour, Players);
-        system("pause");
-      }
-      break;
-    case 6:
-      freeTree(root);
-      exit = false;
-      break;
+      std::cout << "Choose an action" << std::endl;
+      std::cout << "1. Read rating from file" << std::endl;
+      std::cout << "2. Print rating" << std::endl;
+      std::cout << "3. Seeding players" << std::endl;
+      std::cout << "4. Print tournament tree" << std::endl;
+      std::cout << "5. Return the result of the tour" << std::endl;
+      std::cout << "6. Exit" << std::endl;
+      choice = getMenuItemNumber(6);
+      switch (choice)
+        {
+          case 1:
+            freeTree(root);
+            Players = readFileInVector();
+            treeHeight = getTreeHeight(Players);
+            break;
+          case 2:
+            printVector(Players);
+            break;
+          case 3:
+            getTournamentTree(root, Players);
+            break;
+          case 4:
+            printTreeInfix(root, 0);
+            //printLeafs(root, 0);
+            for (int i = treeHeight; i >= 0; i--)
+              {
+                printf("Level: %d\n", i);
+                printTreeLevels(root, i);
+              }
+            cout << "Tree traversal: \n";
+            traverseDepthFirst(root, treeHeight);
+            break;
+          case 5:
+            if (!root)
+              {
+                printf("Empty tree \n");
+                system("pause");
+              }
+            else
+              {
+                cout << "Enter tour number: ";
+                int tour;
+                bool outputParent = false;
+                cin >> tour;
+                tour = treeHeight - tour + 1;
+                cout << "\n";
+                printTourResult(root, tour, Players, outputParent);
+                system("pause");
+              }
+            break;
+          case 6:
+            freeTree(root);
+            exit = false;
+            break;
+        }
     }
-  }
 }
 
 vector<player> readFileInVector()
 {
-  setlocale(LC_ALL, "RU");
-  string pathIn = "input.txt";
+  string pathIn;
   vector<player> Players;
   ifstream FileIn;
   string s;
   player rankingMember;
+  cout << "Enter file name: ";
+  cin >> pathIn;
   FileIn.open(pathIn);
   if (!FileIn.is_open())
-  {
-    std::cout << "file open error" << std::endl;
-  }
-  else
-  {
-    if (!FileIn.eof())
-      getline(FileIn, s);
-    while (!FileIn.eof())
     {
-      std::stringstream strm;
-      strm.str(s);
-      strm >> rankingMember.name >> rankingMember.score;
-      Players.push_back(rankingMember);
-      getline(FileIn, s);
+      std::cout << "file open error" << std::endl;
     }
-  }
+  else
+    {
+      getline(FileIn, s);
+      int i = 1;
+      while (!FileIn.eof())
+        {
+          std::stringstream strm;
+          strm.str(s);
+          strm >> rankingMember.name >> rankingMember.score;
+          cout << i << ". " << rankingMember.name << " " << rankingMember.score << endl;
+          i++;
+          Players.push_back(rankingMember);
+          getline(FileIn, s);
+        }
+    }
   FileIn.close();
   return Players;
 }
@@ -137,93 +162,198 @@ int getTournamentTree(tree *&root, vector<player> &Players)
   tree *tournament;
   int treeHeight = getTreeHeight(Players);
   int numberOfPlayers = Players.size();
-  tournament = new tree;
-  tournament->rankingPlace = 1;
-  tournament->level = 0;
-  tournament->left = NULL;
-  tournament->right = NULL;
-  root = tournament;
-  int ext = 0;
-  while (!ext)
-  {
-    while (tournament->level != treeHeight)
+  int numberOfNodes = numberOfPlayers * 2 - 1;
+  if (!numberOfPlayers)
     {
-      if (tournament->left == NULL)
-      {
-        tournament->left = new tree;
-        tournament->left->parent = tournament;
-        tournament->left->rankingPlace = tournament->rankingPlace;
-        tournament = tournament->left;
-        tournament->left = NULL;
-        tournament->right = NULL;
-        tournament->level = tournament->parent->level + 1;
-      }
-      else
-      {
-        if (tournament->right == NULL)
+      return 0;
+    }
+  else
+    {
+      tournament = new tree;
+      tournament->rankingPlace = 1;
+      tournament->level = 0;
+      tournament->left = NULL;
+      tournament->right = NULL;
+      tournament->parent = NULL;
+      root = tournament;
+      int ext = 0;
+      int counter = 1;
+      while (ext != 1)
         {
-          tournament->right = new tree;
-          tournament->right->parent = tournament;
-          tournament = tournament->right;
-          tournament->left = NULL;
-          tournament->right = NULL;
-          tournament->level = tournament->parent->level + 1;
-          tournament->rankingPlace = (int(pow(2.0, tournament->level))) / 2 + tournament->parent->rankingPlace; //(2^(level)/2)+parent place
-          if (tournament->rankingPlace == numberOfPlayers)
-            ext = 1;
-        }
-        else
-        {
+          while (tournament->level != treeHeight)
+            {
+              if (tournament->left == NULL)
+                {
+                  tournament->left = new tree;
+                  tournament->left->parent = tournament;
+                  tournament->left->rankingPlace = tournament->rankingPlace;
+                  tournament = tournament->left;
+                  tournament->left = NULL;
+                  tournament->right = NULL;
+                  tournament->level = tournament->parent->level + 1;
+                  counter++;
+                }
+              else
+                {
+                  if (tournament->right == NULL)
+                    {
+                      tournament->right = new tree;
+                      tournament->right->parent = tournament;
+                      tournament = tournament->right;
+                      tournament->left = NULL;
+                      tournament->right = NULL;
+                      tournament->level = tournament->parent->level + 1;
+                      tournament->rankingPlace = (int(pow(2.0, tournament->level))) + 1 - tournament->parent->rankingPlace; //(2^(уровень)/2)+место отца
+                      counter++;
+                      if (counter == numberOfNodes)
+                        ext = 1;
+                    }
+                  else // Если и слева и справа есть значения, то подняться на 1 уровень вверх
+                    {
+                      tournament = tournament->parent;
+                    }
+                }
+            }
           tournament = tournament->parent;
         }
-      }
+      return 0;
     }
-    tournament = tournament->parent;
-  }
+}
+
+void printVector(vector<player> &Vector)
+{
+  std::cout << "Print vector" << std::endl;
+  for (int i = 0; i < Vector.size(); i++)
+    std::cout << Vector[i].name << " " << Vector[i].score << std::endl;
+}
+
+void printTreeLevels(tree *ptr, int level)
+{
+  if (ptr == NULL)
+    {
+      return;
+    }
+  else
+    {
+      printTreeLevels(ptr->left, level - 1);
+      if (level == 0)
+        {
+          cout << ptr->rankingPlace << "\n\n";
+        }
+      printTreeLevels(ptr->right, level - 1);
+    }
+}
+
+int printTreeLevels1(struct tree *ptr, int tour, vector<player> &Players, bool &outputParent)
+{
+  if (ptr)
+    {
+      if (ptr->level == tour)
+        {
+          outputParent = (outputParent == true) ? false : true;
+          printf("%4d %-15s %5d\n", ptr->rankingPlace);
+          if (outputParent && ptr->parent != NULL)
+            printf("  %4d %-15s %5d\n", ptr->parent->rankingPlace);
+        }
+      printTourResult(ptr->left, tour, Players, outputParent);
+      printTourResult(ptr->right, tour, Players, outputParent);
+      if (ptr->level == tour - 1)
+        printf("\n");
+    }
   return 0;
 }
 
-void printVector(vector<player> &Players)
+void traverseDepthFirst(tree *root, int treeHeight)
 {
-  std::cout << "Print ranking list: \n";
-  for (int i = 0; i < Players.size(); i++)
-  {
-    printf("%4d. %-15s %5d\n", i + 1, Players[i].name, Players[i].score);
-  }
+  if(!root)
+    {
+      return;
+    }
+  else
+    {
+      queue<tree *> childrenQueue;
+      childrenQueue.push(root);
+      string stringBefor;
+      string stringAfter;
+      int counter = treeHeight;
+      size_t num, num1;
+      //cout << "counter = " << counter << "\n";
+      num = (pow(2, counter))-1;
+      //cout << "num = " << num << "\n";
+      stringBefor.insert(0, num, ' ');
+      int i = 0;
+      while (!childrenQueue.empty())
+        {
+          tree *node = childrenQueue.front();
+          childrenQueue.pop();
+          cout << stringBefor << node->rankingPlace << stringAfter;
+          i++;
+          if (node->left != NULL)
+            childrenQueue.push(node->left);
+          if (node->right != NULL)
+            childrenQueue.push(node->right);
+          if ((i == (int(pow(2, treeHeight - counter)))) && (counter >= 0))
+            {
+              counter--;
+              //cout << "counter in if = " << counter << "\n";
+              i = 0;
+              stringBefor = "";
+              num = (pow(2, counter)) - 1;
+              cout << "num in if =" << stringBefor << num << "\n";
+              stringBefor.insert(0, num, ' ');
+              cout << "\n" << stringBefor;
+              stringAfter = "";
+              num1 = (pow(2, counter));
+            //  cout << "num1 in if = " << num1 << "\n";
+              stringAfter.insert(0, num1, ' ');
+            }
+        }
+    }
 }
 
 void printTreePostfix(tree *ptr, int level)
 {
   if (ptr != NULL)
-  {
-    printTreePostfix(ptr->left, level + 1);
-    printTreePostfix(ptr->right, level + 1);
-    for (int i = 0; i < level; i++)
-      cout << '.';
-    cout << ptr->rankingPlace << "\n";
-  }
+    {
+      printTreePostfix(ptr->left, level + 1);
+      printTreePostfix(ptr->right, level + 1);
+      for (int i = 0; i < level; i++)
+        cout << '.';
+      cout << ptr->rankingPlace << "\n";
+    }
 }
 
 void printTreeInfix(tree *ptr, int level)
 {
   if (ptr != NULL)
-  {
-    printTreeInfix(ptr->left, level + 1);
-    for (int i = 0; i < level; i++)
-      cout << "  ";
-    cout << ptr->rankingPlace << "\n";
-    printTreeInfix(ptr->right, level + 1);
-  }
+    {
+      printTreeInfix(ptr->left, level + 1);
+      for (int i = 0; i < level; i++)
+        cout << "  ";
+      cout << ptr->rankingPlace << "\n";
+      printTreeInfix(ptr->right, level + 1);
+    }
+}
+
+void printLeafs(tree *ptr, int level)
+{
+  if (ptr)
+    {
+      printLeafs(ptr->left, level + 1);
+      if (!ptr->left && !ptr->right)
+        cout << ptr->rankingPlace << endl;
+      printLeafs(ptr->right, level + 1);
+    }
 }
 
 void freeTree(tree *&tree)
 {
   if (tree != NULL)
-  {
-    freeTree(tree->left);
-    freeTree(tree->right);
-    delete tree;
-  }
+    {
+      freeTree(tree->left);
+      freeTree(tree->right);
+      delete tree;
+    }
 }
 
 int getMenuItemNumber(int count)
@@ -232,25 +362,33 @@ int getMenuItemNumber(int count)
   char s[100];
   scanf("%s", s);
   while (sscanf(s, "%d", &itemNumber) != 1 || itemNumber < 1 || itemNumber > count)
-  {
-    printf("Incorrect input. Try again: ");
-    scanf("%s", s);
-  }
+    {
+      printf("Incorrect input. Try again: ");
+      scanf("%s", s);
+    }
   return itemNumber;
 }
 
-int printTourResult(struct tree *ptr, int tour, vector<player> &Players)
+int printTourResult(struct tree *ptr, int tour, vector<player> &Players, bool &outputParent)
 {
   if (ptr)
-  {
-    if (ptr->level == tour)
     {
-      printf("%4d %-15s %5d\n", ptr->rankingPlace, Players[ptr->rankingPlace - 1].name, Players[ptr->rankingPlace - 1].score);
+      if (ptr->level == tour)
+        {
+          outputParent = (outputParent == true) ? false : true;
+          printf("%4d %-15s %5d\n", ptr->rankingPlace, Players[ptr->rankingPlace - 1].name, Players[ptr->rankingPlace - 1].score);
+          if (outputParent && (ptr->parent != NULL))
+            {
+              printf("                         %4d %-15s %5d\n",
+                     ptr->parent->rankingPlace,
+                     Players[ptr->parent->rankingPlace - 1].name,
+                     Players[ptr->parent->rankingPlace - 1].score);
+            }
+        }
+      printTourResult(ptr->left, tour, Players, outputParent);
+      printTourResult(ptr->right, tour, Players, outputParent);
+      if (ptr->level == tour - 1)
+        printf("\n");
     }
-    printTourResult(ptr->left, tour, Players);
-    printTourResult(ptr->right, tour, Players);
-    if (ptr->level == tour - 1)
-      printf("\n");
-  }
   return 0;
 }
